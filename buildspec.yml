@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo Installing TypeScript...
+      - npm install -g typescript
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Compiling the code
+      - tsc
+  post_build:
+    commands:
+      - echo Build completed on `date`
+artifacts:
+  files:
+    - src/*
