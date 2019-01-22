@@ -9,6 +9,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Compiling the code
+      - npm install
       - tsc
   post_build:
     commands:
