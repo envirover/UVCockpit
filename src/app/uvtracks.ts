@@ -1,5 +1,8 @@
-import esriRequest = require("esri/request");
-import GeoJSON = require("geojson");
+
+import { Injectable } from '@angular/core';
+import { uvCockpitConfig } from './config';
+import { HttpClient } from '@angular/common/http';
+import { FeatureCollection } from 'geojson';
 
 /**
  * QGroundControl mission plan
@@ -20,29 +23,34 @@ export interface UVMissionPlan {
 
 /**
  * Client class for UV Tracks web service.
- * 
+ *
  * See the API docs at http://envirover.com/docs/uvtracks-apidocs.html
  */
+@Injectable({
+    providedIn: 'root',
+})
 export class UVTracksClient {
 
     /**
      * Constructs an instance of UVTracksClient
-     * 
+     *
      * @param url UV Tracks service base URL.
      */
-    constructor(private url: string) { }
+    constructor(private http: HttpClient) { }
 
     /**
      * Returns reported positions and state information of the vehicle in GeoJSON format.
-     * 
-     * @param sysId System ID. 
+     *
+     * @param sysId System ID.
      * @param startTime Start of time range query as UNIX epoch time.
      * @param endTime End of time range query as UNIX epoch time.
      * @param top Maximum number of returned entries.
      * @returns reported positions and state information of the vehicle in GeoJSON format.
      */
-    getTracks(sysId?: number, startTime?: number, endTime?: number, top?: number): IPromise<GeoJSON.FeatureCollection> {
-        var tracksUrl = this.url + "/uvtracks/api/v1/tracks";
+    async getTracks(sysId?: number, startTime?: number, endTime?: number, top?: number): Promise<FeatureCollection> {
+        let tracksUrl = uvCockpitConfig.uvTracksBaseURL + '/uvtracks/api/v1/tracks';
+
+        console.log('getTracks: ' + tracksUrl);
 
         const parameters = {
             'SysId': sysId,
@@ -53,15 +61,11 @@ export class UVTracksClient {
 
         const queryString = this.encodeQueryString(parameters);
 
-        if (queryString.length != 0) {
+        if (queryString.length !== 0) {
             tracksUrl += '?' + queryString;
         }
 
-        const value = esriRequest(tracksUrl, {
-            responseType: "json"
-        });
-
-        return value.then(response => response.data);
+        return this.http.get<FeatureCollection>(tracksUrl).toPromise();
     }
 
     /**
@@ -70,8 +74,10 @@ export class UVTracksClient {
      * @param sysId System ID
      * @returns mission plan of the vehicle.
      */
-    getMissions(sysId?: number): IPromise<UVMissionPlan> {
-        var missionsUrl = this.url + "/uvtracks/api/v1/missions";
+    getMissions(sysId?: number): Promise<UVMissionPlan> {
+        let missionsUrl = uvCockpitConfig.uvTracksBaseURL + '/uvtracks/api/v1/missions';
+
+        console.log('getMissions: ' + missionsUrl);
 
         const parameters = {
             'SysId': sysId
@@ -79,23 +85,19 @@ export class UVTracksClient {
 
         const queryString = this.encodeQueryString(parameters);
 
-        if (queryString.length != 0) {
+        if (queryString.length !== 0) {
             missionsUrl += '?' + queryString;
         }
 
-        const value = esriRequest(missionsUrl, {
-            responseType: "json"
-        });
-
-        return value.then(response => response.data);
+        return this.http.get<UVMissionPlan>(missionsUrl).toPromise();
     }
 
     private encodeQueryString(data: any): string {
         return Object.keys(data)
             .filter(key => data[key])
             .map(function (key) {
-                return [key, data[key]].map(encodeURIComponent).join("=");
-            }).join("&");
+                return [key, data[key]].map(encodeURIComponent).join('=');
+            }).join('&');
     }
 
 }

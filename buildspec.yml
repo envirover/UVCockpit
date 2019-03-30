@@ -5,15 +5,16 @@ phases:
     commands:
       - echo Installing TypeScript...
       - npm install -g typescript
+      - npm install -g @angular/cli
   build:
     commands:
       - echo Build started on `date`
       - echo Compiling the code
       - npm install
-      - tsc
+      - ng build
   post_build:
     commands:
       - echo Build completed on `date`
 artifacts:
   files:
-    - src/*
+    - dist/*
