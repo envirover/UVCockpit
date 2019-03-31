@@ -59,11 +59,13 @@ export class EsriMapComponent implements OnInit {
     try {
 
       // Load the modules for the ArcGIS API for JavaScript
-      const [Map, MapView, Point, Polyline, geometryEngine, FeatureLayer] = await loadModules([
+      const [Map, MapView, Point, Polyline, Collection, Graphic, geometryEngine, FeatureLayer] = await loadModules([
         'esri/Map',
         'esri/views/MapView',
         'esri/geometry/Point',
         'esri/geometry/Polyline',
+        'esri/core/Collection',
+        'esri/Graphic',
         'esri/geometry/geometryEngine',
         'esri/layers/FeatureLayer'
       ]);
@@ -82,18 +84,9 @@ export class EsriMapComponent implements OnInit {
 
       const uvtracks = this.uvtracks;
 
-      const adapter = new GeoAdapter(Point, Polyline, geometryEngine);
+      const adapter = new GeoAdapter(Point, Polyline, Collection, Graphic, geometryEngine);
 
-      // Do nothing for 2D view.
-      const fixHomeAltitude = async function (response: any) {
-        return response;
-      };
-
-      const fixTracksAltitude = function (response: GeoJSON.FeatureCollection): GeoJSON.FeatureCollection  {
-        return response;
-      };
-
-      const zoomToLayer = function (layer: any) {
+      const zoomToLayer = function (layer: __esri.FeatureLayer) {
         view.whenLayerView(layer).then(function (layerView: any) {
           layerView.queryExtent().then(function (response: any) {
             // go to the extent of all the graphics in the layer view
@@ -105,7 +98,7 @@ export class EsriMapComponent implements OnInit {
         });
       };
 
-      const createTrackPointsLayer = function (graphics: any) {
+      const createTrackPointsLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
         const pointsLayer = new FeatureLayer({
           source: graphics, // autocast as an array of esri/Graphic
           fields: trackPoint.fields,
@@ -123,7 +116,7 @@ export class EsriMapComponent implements OnInit {
         return pointsLayer;
       };
 
-      const createTrackLinesLayer = function (graphics: any) {
+      const createTrackLinesLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
         const linesLayer = new FeatureLayer({
           source: graphics, // autocast as an array of esri/Graphic
           fields: trackLine.fields,
@@ -140,9 +133,9 @@ export class EsriMapComponent implements OnInit {
         return linesLayer;
       };
 
-      const createMissionPointsLayer = function (graphics: any) {
+      const createMissionPointsLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
         const pointsLayer = new FeatureLayer({
-          source: graphics, // autocast as an array of esri/Graphic
+          source: graphics,
           fields: missionPoint.fields,
           objectIdField: 'seq',
           renderer: missionPoint.renderer2d,
@@ -158,13 +151,9 @@ export class EsriMapComponent implements OnInit {
         return pointsLayer;
       };
 
-      const createMissionLinesLayer = function (graphics: any) {
-        if (graphics == null || graphics.length === 0) {
-          return null;
-        }
-
+      const createMissionLinesLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
         const linesLayer = new FeatureLayer({
-          source: graphics, // autocast as an array of esri/Graphic
+          source: graphics,
           fields: missionLine.fields,
           objectIdField: 'sysid',
           renderer: missionLine.renderer2d,
@@ -185,8 +174,7 @@ export class EsriMapComponent implements OnInit {
       };
 
        view.when(function () {
-        const missions = uvtracks.getMissions()
-          .then(fixHomeAltitude);
+        const missions = uvtracks.getMissions();
 
         missions
           .then(m => {
@@ -202,8 +190,7 @@ export class EsriMapComponent implements OnInit {
           .then(createMissionPointsLayer)
           .catch(errback);
 
-        const tracks = uvtracks.getTracks()
-          .then(fixTracksAltitude);
+        const tracks = uvtracks.getTracks();
 
         tracks
           .then(m => {

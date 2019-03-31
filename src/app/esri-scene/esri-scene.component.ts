@@ -59,11 +59,13 @@ export class EsriSceneComponent implements OnInit {
     try {
 
       // Load the modules for the ArcGIS API for JavaScript
-      const [Map, SceneView, Point, Polyline, geometryEngine, FeatureLayer] = await loadModules([
+      const [Map, SceneView, Point, Polyline, Collection, Graphic, geometryEngine, FeatureLayer] = await loadModules([
         'esri/Map',
         'esri/views/SceneView',
         'esri/geometry/Point',
         'esri/geometry/Polyline',
+        'esri/core/Collection',
+        'esri/Graphic',
         'esri/geometry/geometryEngine',
         'esri/layers/FeatureLayer'
       ]);
@@ -93,7 +95,7 @@ export class EsriSceneComponent implements OnInit {
 
       const uvtracks = this.uvtracks;
 
-      const adapter = new GeoAdapter(Point, Polyline, geometryEngine);
+      const adapter = new GeoAdapter(Point, Polyline, Collection, Graphic, geometryEngine);
 
       const fixHomeAltitude = async function (plan: UVMissionPlan) {
         if (plan.mission && plan.mission.plannedHomePosition.length > 2) {
@@ -124,8 +126,8 @@ export class EsriSceneComponent implements OnInit {
         return geoJson;
       };
 
-      const zoomToLayer = function (graphics: any) {
-        const pt = graphics[0].geometry;
+      const zoomToLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.Collection<__esri.Graphic>  {
+        const pt = graphics.getItemAt(0).geometry;
 
         view.goTo({
           target: pt,
@@ -135,7 +137,7 @@ export class EsriSceneComponent implements OnInit {
         return graphics;
       };
 
-      const createTrackPointsLayer = function (graphics: __esri.Collection<__esri.Graphic>) {
+      const createTrackPointsLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
         const pointsLayer = new FeatureLayer({
           source: graphics,
           fields: trackPoint.fields,
@@ -153,7 +155,7 @@ export class EsriSceneComponent implements OnInit {
         return pointsLayer;
       };
 
-      const createTrackLinesLayer = function (graphics: any) {
+      const createTrackLinesLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
         const linesLayer = new FeatureLayer({
           source: graphics,
           fields: trackLine.fields,
@@ -170,7 +172,7 @@ export class EsriSceneComponent implements OnInit {
         return linesLayer;
       };
 
-      const createMissionPointsLayer = function (graphics: any) {
+      const createMissionPointsLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
         const pointsLayer = new FeatureLayer({
           source: graphics,
           fields: missionPoint.fields,
@@ -188,11 +190,7 @@ export class EsriSceneComponent implements OnInit {
         return pointsLayer;
       };
 
-      const createMissionLinesLayer = function (graphics: any) {
-        if (graphics == null || graphics.length === 0) {
-          return null;
-        }
-
+      const createMissionLinesLayer = function (graphics: any): __esri.FeatureLayer {
         const linesLayer = new FeatureLayer({
           source: graphics,
           fields: missionLine.fields,
