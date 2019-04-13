@@ -3,6 +3,7 @@ import { loadModules } from 'esri-loader';
 import { trackPoint, trackLine, missionPoint, missionLine } from '../uvlayers';
 import { UVTracksClient } from '../uvtracks';
 import { GeoAdapter } from '../geo-adapter';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-esri-map',
@@ -20,7 +21,10 @@ export class EsriMapComponent implements OnInit {
   private _center: Array<number> = [];
   private _basemap = 'satellite';
   private _loaded = false;
-
+  private sysid?: number;
+  private startTime?: number;
+  private endTime?: number;
+  private top?: number;
 
   get mapLoaded(): boolean {
     return this._loaded;
@@ -53,7 +57,15 @@ export class EsriMapComponent implements OnInit {
     return this._basemap;
   }
 
-  constructor(private uvtracks: UVTracksClient) { }
+  constructor(private uvtracks: UVTracksClient, private route: ActivatedRoute) {
+    this.route.queryParams.subscribe(params => {
+      console.log(params);
+      this.sysid = params['sysid'] ? Number(params['sysid']) : undefined;
+      this.startTime = params['startTime'] ? Number(params['startTime']) : undefined;
+      this.endTime = params['endTime'] ? Number(params['endTime']) : undefined;
+      this.top = params['top'] ? Number(params['top']) : undefined;
+    });
+  }
 
   async initializeMap() {
     try {
@@ -173,7 +185,7 @@ export class EsriMapComponent implements OnInit {
         console.error('Error. ', error);
       };
 
-       view.when(function () {
+       view.when(() => {
         const missions = uvtracks.getMissions();
 
         missions
@@ -190,7 +202,7 @@ export class EsriMapComponent implements OnInit {
           .then(createMissionPointsLayer)
           .catch(errback);
 
-        const tracks = uvtracks.getTracks();
+        const tracks = uvtracks.getTracks(this.sysid, this.startTime, this.endTime, this.top);
 
         tracks
           .then(m => {

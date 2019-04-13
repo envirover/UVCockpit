@@ -53,11 +53,11 @@ export class UVTracksClient {
         console.log('getTracks: ' + tracksUrl);
 
         const parameters = {
-            'SysId': sysId,
-            'StartTime': startTime,
-            'EndTime': endTime,
-            'Top': top
-        }
+            'sysid': sysId,
+            'startTime': startTime,
+            'endTime': endTime,
+            'top': top
+        };
 
         const queryString = this.encodeQueryString(parameters);
 
@@ -70,7 +70,7 @@ export class UVTracksClient {
 
     /**
      * Returns mission plan of the vehicle.
-     * 
+     *
      * @param sysId System ID
      * @returns mission plan of the vehicle.
      */
@@ -81,7 +81,7 @@ export class UVTracksClient {
 
         const parameters = {
             'SysId': sysId
-        }
+        };
 
         const queryString = this.encodeQueryString(parameters);
 
