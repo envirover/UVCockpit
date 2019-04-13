@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, Input, Output, EventEmitter }
 import { loadModules } from 'esri-loader';
 
 import { trackPoint, trackLine, missionPoint, missionLine } from '../uvlayers';
-import { UVTracksClient, UVMissionPlan } from '../uvtracks';
+import { UVTracksClient } from '../uvtracks';
 import { GeoAdapter } from '../geo-adapter';
 import { ActivatedRoute } from '@angular/router';
 
@@ -82,7 +82,7 @@ export class EsriSceneComponent implements OnInit {
         'esri/layers/FeatureLayer'
       ]);
 
-      let elevationDelta = 0.0;
+      // let elevationDelta = 0.0;
 
       /**************************************************
        * Create the map and view
@@ -109,34 +109,34 @@ export class EsriSceneComponent implements OnInit {
 
       const adapter = new GeoAdapter(Point, Polyline, Collection, Graphic, geometryEngine);
 
-      const fixHomeAltitude = async function (plan: UVMissionPlan) {
-        if (plan.mission && plan.mission.plannedHomePosition.length > 2) {
-          const home = new Point({
-            x: plan.mission.plannedHomePosition[1],
-            y: plan.mission.plannedHomePosition[0],
-            z: plan.mission.plannedHomePosition[2],
-          });
+      // const fixHomeAltitude = async function (plan: UVMissionPlan) {
+      //   if (plan.mission && plan.mission.plannedHomePosition.length > 2) {
+      //     const home = new Point({
+      //       x: plan.mission.plannedHomePosition[1],
+      //       y: plan.mission.plannedHomePosition[0],
+      //       z: plan.mission.plannedHomePosition[2],
+      //     });
 
-          const elevation = await map.ground.layers.items[0].queryElevation(home);
+      //     const elevation = await map.ground.layers.items[0].queryElevation(home);
 
-          elevationDelta = elevation.geometry.z - plan.mission.plannedHomePosition[2];
+      //     elevationDelta = elevation.geometry.z - plan.mission.plannedHomePosition[2];
 
-          plan.mission.plannedHomePosition[2] = elevation.geometry.z;
-        }
+      //     plan.mission.plannedHomePosition[2] = elevation.geometry.z;
+      //   }
 
-        return plan;
-      };
+      //   return plan;
+      // };
 
-      const fixTracksAltitude = function (geoJson: GeoJSON.FeatureCollection) {
-        if (geoJson.features) {
-          for (let i = 0; i < geoJson.features.length; i++) {
-            const feature = geoJson.features[i];
-            (feature.geometry as GeoJSON.Point).coordinates[2] += elevationDelta;
-          }
-        }
+      // const fixTracksAltitude = function (geoJson: GeoJSON.FeatureCollection) {
+      //   if (geoJson.features) {
+      //     for (let i = 0; i < geoJson.features.length; i++) {
+      //       const feature = geoJson.features[i];
+      //       (feature.geometry as GeoJSON.Point).coordinates[2] += elevationDelta;
+      //     }
+      //   }
 
-        return geoJson;
-      };
+      //   return geoJson;
+      // };
 
       const zoomToLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.Collection<__esri.Graphic> {
         const pt = graphics.getItemAt(0).geometry;
@@ -225,8 +225,8 @@ export class EsriSceneComponent implements OnInit {
       };
 
       view.when(() => {
-        const missions = uvtracks.getMissions()
-          .then(fixHomeAltitude);
+        const missions = uvtracks.getMissions();
+         // .then(fixHomeAltitude);
 
         missions
           .then(m => {
@@ -242,8 +242,8 @@ export class EsriSceneComponent implements OnInit {
           .then(createMissionPointsLayer)
           .catch(errback);
 
-        const tracks = uvtracks.getTracks(this.sysid, this.startTime, this.endTime, this.top)
-          .then(fixTracksAltitude);
+        const tracks = uvtracks.getTracks(this.sysid, this.startTime, this.endTime, this.top);
+         // .then(fixTracksAltitude);
 
         tracks
           .then(m => {

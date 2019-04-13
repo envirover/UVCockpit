@@ -148,9 +148,9 @@ export class GeoAdapter {
 
                     if (item.command === 22) { // takeoff
                         point = new this.Point({
-                            x: points[0].geometry.x,
-                            y: points[0].geometry.y,
-                            z: points[0].geometry.z + item.params[6]
+                            x: points.getItemAt(0).geometry.x,
+                            y: points.getItemAt(0).geometry.y,
+                            z: points.getItemAt(0).geometry.z + item.params[6]
                         });
                     }
 
