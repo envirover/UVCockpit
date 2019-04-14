@@ -3,3 +3,10 @@
 # UV Cockpit
 
 SPL front end applications.
+
+## Build
+ng build --base-href /uvcockpit/
+docker build -t uvcockpit .
+
+# Run
+docker run -p 80:80 -d uvcockpit

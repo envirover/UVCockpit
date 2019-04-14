@@ -3,6 +3,8 @@ version: 0.2
 phases:
   install:
     commands:
+      - sudo apt-get -y update
+      - sudo apt-get -y install nodejs npm
       - echo Installing TypeScript...
       - npm install -g typescript
       - npm install -g @angular/cli
@@ -11,7 +13,8 @@ phases:
       - echo Build started on `date`
       - echo Compiling the code
       - npm install
-      - ng build
+      - ng build --base-href /uvcockpit/
+      - docker build -t uvcockpit .
   post_build:
     commands:
       - echo Build completed on `date`
