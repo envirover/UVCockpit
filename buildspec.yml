@@ -5,6 +5,7 @@ phases:
     commands:
       - sudo apt-get -y update
       - sudo apt-get -y install nodejs npm
+      - npm config set strict-ssl false
       - echo Installing TypeScript...
       - npm install -g typescript
       - npm install -g @angular/cli
