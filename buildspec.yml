@@ -7,8 +7,8 @@ phases:
       - sudo apt-get -y install nodejs npm
       - npm config set strict-ssl false
       - echo Installing TypeScript...
-      - npm install -g typescript
-      - npm install -g @angular/cli
+      - npm install typescript
+      - npm install @angular/cli
   build:
     commands:
       - echo Build started on `date`
