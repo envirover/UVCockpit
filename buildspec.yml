@@ -7,8 +7,8 @@ phases:
       # - . ~/.bashrc
       # - nvm --version
       # - nvm install node
-      - apt update -y
-      - apt install -y nodejs npm
+      - curl -sL https://deb.nodesource.com/setup_7.x | bash -
+      - apt-get install -y nodejs
       - nodejs --version
       - npm config set strict-ssl false
       - echo Installing TypeScript...
