@@ -12,8 +12,8 @@ phases:
       - nodejs --version
       - npm config set strict-ssl false
       - echo Installing TypeScript...
-      - npm install typescript
-      - npm install @angular/cli
+      - npm install -g typescript
+      - npm install -g @angular/cli
   build:
     commands:
       - echo Build started on `date`
