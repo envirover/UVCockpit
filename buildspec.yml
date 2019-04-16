@@ -14,16 +14,23 @@ phases:
       - echo Installing TypeScript...
       - npm install -g typescript
       - npm install -g @angular/cli
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login --no-include-email --region us-west-2)      
   build:
     commands:
       - echo Build started on `date`
       - echo Compiling the code
       - npm install
       - ng build --base-href /uvcockpit/
-      - docker build -t uvcockpit .
+      - docker build -t uvcockpit:$IMAGE_TAG .
+      - docker tag uvcockpit:$IMAGE_TAG 306327466070.dkr.ecr.us-west-2.amazonaws.com/uvcockpit:$IMAGE_TAG
   post_build:
     commands:
       - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push 306327466070.dkr.ecr.us-west-2.amazonaws.com/uvcockpit:$IMAGE_TAG
 artifacts:
   files:
     - '**/*'
