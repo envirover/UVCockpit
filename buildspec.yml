@@ -3,10 +3,13 @@ version: 0.2
 phases:
   install:
     commands:
-      - curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash
-      - . ~/.bashrc
-      - nvm --version
-      - nvm install node
+      # - curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash
+      # - . ~/.bashrc
+      # - nvm --version
+      # - nvm install node
+      - apt update -y
+      - apt install -y nodejs npm
+      - nodejs --version
       - npm config set strict-ssl false
       - echo Installing TypeScript...
       - npm install typescript
