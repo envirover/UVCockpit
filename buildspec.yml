@@ -7,7 +7,7 @@ phases:
       # - . ~/.bashrc
       # - nvm --version
       # - nvm install node
-      - curl -sL https://deb.nodesource.com/setup_7.x | bash -
+      - curl -sL https://deb.nodesource.com/setup_10.x | bash -
       - apt-get install -y nodejs
       - nodejs --version
       - npm config set strict-ssl false
