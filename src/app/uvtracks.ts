@@ -1,8 +1,8 @@
 
 import { Injectable } from '@angular/core';
-import { uvCockpitConfig } from './config';
 import { HttpClient } from '@angular/common/http';
 import { FeatureCollection } from 'geojson';
+import { AppConfig } from './config';
 
 /**
  * QGroundControl mission plan
@@ -48,7 +48,7 @@ export class UVTracksClient {
      * @returns reported positions and state information of the vehicle in GeoJSON format.
      */
     async getTracks(sysId?: number, startTime?: number, endTime?: number, top?: number): Promise<FeatureCollection> {
-        let tracksUrl = uvCockpitConfig.uvTracksBaseURL + '/uvtracks/api/v1/tracks';
+        let tracksUrl = AppConfig.uvTracksBaseURL + '/uvtracks/api/v1/tracks';
 
         console.log('getTracks: ' + tracksUrl);
 
@@ -75,7 +75,7 @@ export class UVTracksClient {
      * @returns mission plan of the vehicle.
      */
     getMissions(sysId?: number): Promise<UVMissionPlan> {
-        let missionsUrl = uvCockpitConfig.uvTracksBaseURL + '/uvtracks/api/v1/missions';
+        let missionsUrl = AppConfig.uvTracksBaseURL + '/uvtracks/api/v1/missions';
 
         console.log('getMissions: ' + missionsUrl);
 

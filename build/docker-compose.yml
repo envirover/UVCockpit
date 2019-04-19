@@ -1,0 +1,10 @@
+version: "3.7"
+services:
+  uvcockpit:
+    image: uvcockpit:latest
+    ports: 
+      - "80:80"
+    environment: 
+      - "UVTRACKS_PROTOCOL=http:"
+      - "UVTRACKS_HOSTNAME=localhost"
+      - "UVTRACKS_PORT=8080"

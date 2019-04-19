@@ -3,10 +3,6 @@ version: 0.2
 phases:
   install:
     commands:
-      # - curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash
-      # - . ~/.bashrc
-      # - nvm --version
-      # - nvm install node
       - curl -sL https://deb.nodesource.com/setup_10.x | bash -
       - apt-get install -y nodejs
       - nodejs --version
@@ -24,14 +20,10 @@ phases:
       - echo Compiling the code
       - npm install
       - ng build --base-href /uvcockpit/
-      - docker build -t uvcockpit:$IMAGE_TAG .
+      - docker build -t uvcockpit:$IMAGE_TAG ./build/
       - docker tag uvcockpit:$IMAGE_TAG 306327466070.dkr.ecr.us-west-2.amazonaws.com/uvcockpit:$IMAGE_TAG
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
       - docker push 306327466070.dkr.ecr.us-west-2.amazonaws.com/uvcockpit:$IMAGE_TAG
-artifacts:
-  files:
-    - '**/*'
-  base-directory: 'dist*'
