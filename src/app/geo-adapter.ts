@@ -8,40 +8,67 @@ import { UVMissionPlan } from './uvtracks';
  */
 export class GeoAdapter {
 
-    constructor(private Point: any, private Polyline: any, private geometryEngine: any) {
+    /**
+     * Construct GeoAdapter instance
+     *
+     * @param Point 'esri/geometry/Point' module
+     * @param Polyline 'esri/geometry/Polyline' module
+     * @param Collection 'esri/core/Collection' module
+     * @param Graphic 'esri/Graphic' module
+     * @param geometryEngine 'esri/geometry/geometryEngine' module
+     */
+    constructor(private Point: any, private Polyline: any, private Collection: any,
+                private Graphic: any, private geometryEngine: any) {
     }
 
-    convertTrackPointsGraphics(geoJson: GeoJSON.FeatureCollection): any {
+    /**
+     * Converts a collection of HIGH_LATENCY messages from GeoJSON FeatureCollection
+     * to collection of Esri Graphic objects of point geometry type.
+     *
+     * @param geoJson HIGH_LATENCY messages in GeoJSON FeatureCollection format
+     */
+    public convertTrackPointsGraphics(geoJson: GeoJSON.FeatureCollection): __esri.Collection<__esri.Graphic> {
+        const points = new this.Collection();
+
         if (geoJson.features.length === 0) {
-            return [];
+            return points;
         }
 
         const feature = geoJson.features[0];
 
         const coordinates = (feature.geometry as GeoJSON.Point).coordinates;
 
-        const graphics = {
+        const graphic = new this.Graphic({
             geometry: new this.Point({
                 x: coordinates[0],
                 y: coordinates[1],
                 z: coordinates[2]
             }),
             attributes: feature.properties
-        };
+        });
 
-        if (graphics.attributes) {
-            graphics.attributes.latitude /= 10000000.0;
-            graphics.attributes.longitude /= 10000000.0;
-            graphics.attributes.heading /= 100.0;
-            graphics.attributes.pitch /= 100.0;
-            graphics.attributes.roll /= 100.0;
-            graphics.attributes.tilt = graphics.attributes.roll - 90;
+        if (graphic.attributes) {
+            graphic.attributes.latitude /= 10000000.0;
+            graphic.attributes.longitude /= 10000000.0;
+            graphic.attributes.heading /= 100.0;
+            graphic.attributes.pitch /= 100.0;
+            graphic.attributes.roll /= 100.0;
+            graphic.attributes.tilt = graphic.attributes.roll - 90;
         }
 
-        return [graphics];
+
+        points.push(graphic);
+
+        return points;
     }
 
-    convertTrackLinesGraphics(geoJson: GeoJSON.FeatureCollection) {
+    /**
+     * Converts a collection of HIGH_LATENCY messages from GeoJSON FeatureCollection
+     * to a collection with single Esri Graphic object with polyline geometry type.
+     *
+     * @param geoJson HIGH_LATENCY messages in GeoJSON FeatureCollection format
+     */
+    public convertTrackLinesGraphics(geoJson: GeoJSON.FeatureCollection): __esri.Collection<__esri.Graphic> {
         let minTime = -1;
         let maxTime = -1;
         const coordinates = [];
@@ -61,8 +88,9 @@ export class GeoAdapter {
                 }
             }
         }
+        const lines = new this.Collection();
 
-        return [{
+        lines.push(new this.Graphic({
             geometry: new this.Polyline({
                 hasZ: true,
                 hasM: false,
@@ -72,19 +100,26 @@ export class GeoAdapter {
                 from_time: minTime,
                 to_time: maxTime
             }
-        }];
+        }));
+
+        return lines;
     }
 
-    convertMissionPointsGraphics(plan: UVMissionPlan) {
+    /**
+     * Converts mission items of UV mission plan to collection of Esri Graphic objects
+     * of point geometry type.
+     *
+     * @param plan UV mission plan
+     */
+    public convertMissionPointsGraphics(plan: UVMissionPlan): __esri.Collection<__esri.Graphic> {
+        const points = new this.Collection();
+
         if (plan.mission && plan.mission.plannedHomePosition.length < 3) {
-            return [];
+            return points;
         }
 
-        // Create an array of Graphics from mission items
-        const points = [];
-
         if (plan.mission) {
-            points.push({
+            points.push(new this.Graphic({
                 geometry: new this.Point({
                     x: plan.mission.plannedHomePosition[1],
                     y: plan.mission.plannedHomePosition[0],
@@ -99,7 +134,7 @@ export class GeoAdapter {
                     type: 'PlannedHome',
                     params: '[]'
                 }
-            });
+            }));
 
             for (let i = 0; i < plan.mission.items.length; i++) {
                 const item = plan.mission.items[i];
@@ -108,18 +143,18 @@ export class GeoAdapter {
                     let point: any = new this.Point({
                         x: item.params[5],
                         y: item.params[4],
-                        z: item.params[6] + points[0].geometry.z
+                        z: item.params[6] + points.getItemAt(0).geometry.z
                     });
 
                     if (item.command === 22) { // takeoff
                         point = new this.Point({
-                            x: points[0].geometry.x,
-                            y: points[0].geometry.y,
-                            z: points[0].geometry.z + item.params[6]
+                            x: points.getItemAt(0).geometry.x,
+                            y: points.getItemAt(0).geometry.y,
+                            z: points.getItemAt(0).geometry.z + item.params[6]
                         });
                     }
 
-                    points.push({
+                    points.push(new this.Graphic({
                         geometry: point,
                         attributes: {
                             seq: i + 1,
@@ -130,7 +165,7 @@ export class GeoAdapter {
                             type: item.type,
                             params: String(item.params)
                         }
-                    });
+                    }));
                 }
             }
         }
@@ -138,9 +173,17 @@ export class GeoAdapter {
         return points;
     }
 
-    convertMissionLinesGraphics(plan: UVMissionPlan) {
+    /**
+     * Converts mission items of UV mission plan to a collection with single 
+     * Esri Graphic object with polyline geometry type.
+     *
+     * @param plan UV mission plan
+     */
+    public convertMissionLinesGraphics(plan: UVMissionPlan): __esri.Collection<__esri.Graphic> {
+        const lines = new this.Collection();
+
         if (plan.mission && plan.mission.plannedHomePosition.length < 3) {
-            return [];
+            return lines;
         }
 
         const coordinates = [];
@@ -171,14 +214,16 @@ export class GeoAdapter {
 
         const length = this.geometryEngine.geodesicLength(polyline, 'meters');
 
-        return [{
+        lines.push(new this.Graphic({
             geometry: polyline,
             attributes: {
                 cruiseSpeed: plan.mission ? plan.mission.cruiseSpeed : 0,
                 hoverSpeed: plan.mission ? plan.mission.hoverSpeed : 0,
                 length: length
             }
-        }];
+        }));
+
+        return lines;
     }
 
 }

@@ -2,8 +2,9 @@ import { Component, OnInit, ViewChild, ElementRef, Input, Output, EventEmitter }
 import { loadModules } from 'esri-loader';
 
 import { trackPoint, trackLine, missionPoint, missionLine } from '../uvlayers';
-import { UVTracksClient, UVMissionPlan } from '../uvtracks';
+import { UVTracksClient } from '../uvtracks';
 import { GeoAdapter } from '../geo-adapter';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-esri-scene',
@@ -21,6 +22,10 @@ export class EsriSceneComponent implements OnInit {
   private _center: Array<number> = [];
   private _basemap = 'satellite';
   private _loaded = false;
+  private sysid?: number;
+  private startTime?: number;
+  private endTime?: number;
+  private top?: number;
 
   get mapLoaded(): boolean {
     return this._loaded;
@@ -53,22 +58,31 @@ export class EsriSceneComponent implements OnInit {
     return this._basemap;
   }
 
-  constructor(private uvtracks: UVTracksClient) { }
+  constructor(private uvtracks: UVTracksClient, private route: ActivatedRoute) {
+    this.route.queryParams.subscribe(params => {
+      console.log(params);
+      this.sysid = params['sysid'] ? Number(params['sysid']) : undefined;
+      this.startTime = params['startTime'] ? Number(params['startTime']) : undefined;
+      this.endTime = params['endTime'] ? Number(params['endTime']) : undefined;
+      this.top = params['top'] ? Number(params['top']) : undefined;
+    });
+  }
 
   async initializeMap() {
     try {
-
       // Load the modules for the ArcGIS API for JavaScript
-      const [Map, SceneView, Point, Polyline, geometryEngine, FeatureLayer] = await loadModules([
+      const [Map, SceneView, Point, Polyline, Collection, Graphic, geometryEngine, FeatureLayer] = await loadModules([
         'esri/Map',
         'esri/views/SceneView',
         'esri/geometry/Point',
         'esri/geometry/Polyline',
+        'esri/core/Collection',
+        'esri/Graphic',
         'esri/geometry/geometryEngine',
         'esri/layers/FeatureLayer'
       ]);
 
-      let elevationDelta = 0.0;
+      // let elevationDelta = 0.0;
 
       /**************************************************
        * Create the map and view
@@ -93,39 +107,39 @@ export class EsriSceneComponent implements OnInit {
 
       const uvtracks = this.uvtracks;
 
-      const adapter = new GeoAdapter(Point, Polyline, geometryEngine);
+      const adapter = new GeoAdapter(Point, Polyline, Collection, Graphic, geometryEngine);
 
-      const fixHomeAltitude = async function (plan: UVMissionPlan) {
-        if (plan.mission && plan.mission.plannedHomePosition.length > 2) {
-          const home = new Point({
-            x: plan.mission.plannedHomePosition[1],
-            y: plan.mission.plannedHomePosition[0],
-            z: plan.mission.plannedHomePosition[2],
-          });
+      // const fixHomeAltitude = async function (plan: UVMissionPlan) {
+      //   if (plan.mission && plan.mission.plannedHomePosition.length > 2) {
+      //     const home = new Point({
+      //       x: plan.mission.plannedHomePosition[1],
+      //       y: plan.mission.plannedHomePosition[0],
+      //       z: plan.mission.plannedHomePosition[2],
+      //     });
 
-          const elevation = await map.ground.layers.items[0].queryElevation(home);
+      //     const elevation = await map.ground.layers.items[0].queryElevation(home);
 
-          elevationDelta = elevation.geometry.z - plan.mission.plannedHomePosition[2];
+      //     elevationDelta = elevation.geometry.z - plan.mission.plannedHomePosition[2];
 
-          plan.mission.plannedHomePosition[2] = elevation.geometry.z;
-        }
+      //     plan.mission.plannedHomePosition[2] = elevation.geometry.z;
+      //   }
 
-        return plan;
-      };
+      //   return plan;
+      // };
 
-      const fixTracksAltitude = function (geoJson: GeoJSON.FeatureCollection) {
-        if (geoJson.features) {
-          for (let i = 0; i < geoJson.features.length; i++) {
-            const feature = geoJson.features[i];
-            (feature.geometry as GeoJSON.Point).coordinates[2] += elevationDelta;
-          }
-        }
+      // const fixTracksAltitude = function (geoJson: GeoJSON.FeatureCollection) {
+      //   if (geoJson.features) {
+      //     for (let i = 0; i < geoJson.features.length; i++) {
+      //       const feature = geoJson.features[i];
+      //       (feature.geometry as GeoJSON.Point).coordinates[2] += elevationDelta;
+      //     }
+      //   }
 
-        return geoJson;
-      };
+      //   return geoJson;
+      // };
 
-      const zoomToLayer = function (graphics: any) {
-        const pt = graphics[0].geometry;
+      const zoomToLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.Collection<__esri.Graphic> {
+        const pt = graphics.getItemAt(0).geometry;
 
         view.goTo({
           target: pt,
@@ -135,7 +149,7 @@ export class EsriSceneComponent implements OnInit {
         return graphics;
       };
 
-      const createTrackPointsLayer = function (graphics: __esri.Collection<__esri.Graphic>) {
+      const createTrackPointsLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
         const pointsLayer = new FeatureLayer({
           source: graphics,
           fields: trackPoint.fields,
@@ -153,7 +167,7 @@ export class EsriSceneComponent implements OnInit {
         return pointsLayer;
       };
 
-      const createTrackLinesLayer = function (graphics: any) {
+      const createTrackLinesLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
         const linesLayer = new FeatureLayer({
           source: graphics,
           fields: trackLine.fields,
@@ -170,7 +184,7 @@ export class EsriSceneComponent implements OnInit {
         return linesLayer;
       };
 
-      const createMissionPointsLayer = function (graphics: any) {
+      const createMissionPointsLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
         const pointsLayer = new FeatureLayer({
           source: graphics,
           fields: missionPoint.fields,
@@ -188,11 +202,7 @@ export class EsriSceneComponent implements OnInit {
         return pointsLayer;
       };
 
-      const createMissionLinesLayer = function (graphics: any) {
-        if (graphics == null || graphics.length === 0) {
-          return null;
-        }
-
+      const createMissionLinesLayer = function (graphics: any): __esri.FeatureLayer {
         const linesLayer = new FeatureLayer({
           source: graphics,
           fields: missionLine.fields,
@@ -214,9 +224,9 @@ export class EsriSceneComponent implements OnInit {
         console.error('Error. ', error);
       };
 
-      view.when(function () {
-        const missions = uvtracks.getMissions()
-          .then(fixHomeAltitude);
+      view.when(() => {
+        const missions = uvtracks.getMissions();
+         // .then(fixHomeAltitude);
 
         missions
           .then(m => {
@@ -232,8 +242,8 @@ export class EsriSceneComponent implements OnInit {
           .then(createMissionPointsLayer)
           .catch(errback);
 
-        const tracks = uvtracks.getTracks()
-          .then(fixTracksAltitude);
+        const tracks = uvtracks.getTracks(this.sysid, this.startTime, this.endTime, this.top);
+         // .then(fixTracksAltitude);
 
         tracks
           .then(m => {

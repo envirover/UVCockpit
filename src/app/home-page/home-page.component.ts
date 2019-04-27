@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { uvCockpitConfig } from '../config';
+import { AppConfig } from '../config';
 
 @Component({
   selector: 'app-home-page',
@@ -12,11 +12,11 @@ export class HomePageComponent implements OnInit {
   }
 
   get tracksUrl() {
-    return uvCockpitConfig.uvTracksBaseURL + '/uvtracks/api/v1/tracks';
+    return AppConfig.uvTracksBaseURL + '/uvtracks/api/v1/tracks';
   }
 
   get missionsUrl() {
-    return uvCockpitConfig.uvTracksBaseURL + '/uvtracks/api/v1/missions';
+    return AppConfig.uvTracksBaseURL + '/uvtracks/api/v1/missions';
   }
 
   ngOnInit() {
