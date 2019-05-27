@@ -1,11 +1,17 @@
 #!/bin/bash
 
-cat <<EOF > /usr/share/nginx/html/uvcockpit/assets/config.json
-{
-    "uvtracks": {
-        "protocol": "$UVTRACKS_PROTOCOL", 
-        "hostname": "$UVTRACKS_HOSTNAME",
-        "port": "$UVTRACKS_PORT"
-    }
+cat <<EOF > /etc/nginx/conf.d/default.conf
+server {
+  listen 80;
+  root /usr/share/nginx/html;
+
+  location /uvcockpit {
+    index index.html;
+    try_files \$uri \$uri/ /uvcockpit/index.html;
+  }
+
+  location /uvtracks {
+    proxy_pass $UVTRACKS_PRIVATE_URL;
+  } 
 }
 EOF

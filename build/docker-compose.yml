@@ -5,6 +5,4 @@ services:
     ports: 
       - "80:80"
     environment: 
-      - "UVTRACKS_PROTOCOL=http:"
-      - "UVTRACKS_HOSTNAME=localhost"
-      - "UVTRACKS_PORT=8080"
+      - "UVTRACKS_PRIVATE_URL=http://uvtracks:8080"
