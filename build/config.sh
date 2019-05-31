@@ -1,4 +1,7 @@
 #!/bin/bash
+if [ -z "$UVTRACKS_PRIVATE_URL" ]; then
+  export UVTRACKS_PRIVATE_URL="http://localhost:8080"
+fi
 
 cat <<EOF > /etc/nginx/conf.d/default.conf
 server {
