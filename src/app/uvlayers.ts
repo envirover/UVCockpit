@@ -221,7 +221,7 @@ export const trackPoint = {
                 },
                 {
                     fieldName: 'temperature_air',
-                    label: 'Battery current (amp)',
+                    label: 'Battery 2 voltage (volts)',
                     visible: true
                 },
                 {
