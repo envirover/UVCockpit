@@ -16,7 +16,7 @@ export class EsriSceneComponent implements OnInit {
   @Output() mapLoadedEvent = new EventEmitter<boolean>();
 
   // The <div> where we will place the map
-  @ViewChild('sceneViewNode') private mapViewEl: ElementRef = new ElementRef(null);
+  @ViewChild('sceneViewNode', { static: true }) private mapViewEl: ElementRef = new ElementRef(null);
 
   private _zoom = 15;
   private _center: Array<number> = [];

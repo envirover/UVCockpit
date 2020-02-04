@@ -15,7 +15,7 @@ export class EsriMapComponent implements OnInit {
   @Output() mapLoadedEvent = new EventEmitter<boolean>();
 
   // The <div> where we will place the map
-  @ViewChild('mapViewNode') private mapViewEl: ElementRef = new ElementRef(null);
+  @ViewChild('mapViewNode', { static: true }) private mapViewEl: ElementRef = new ElementRef(null);
 
   private _zoom = 15;
   private _center: Array<number> = [];

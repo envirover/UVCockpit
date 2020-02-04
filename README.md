@@ -1,15 +1,21 @@
 [![Build Status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoidVBIOThUQlpSeGhzRjQwNUw4TFEySFcxWXE4NFRpaE1wemZ5d3pNcGR6TU5JZmRUZDkwMmVqQzVsaUQxaGQyUmM4eXgrVjBEVlJ3dUZPOFBTRGJGWDNBPSIsIml2UGFyYW1ldGVyU3BlYyI6IjNpOUV3VnhlSlNkWEI3QnQiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)](https://us-west-2.console.aws.amazon.com/codebuild/home?region=us-west-2#/projects/UVCockpit/view)
 
-# UV Cockpit Image 
+# UV Cockpit Image
 
 UV Cockpit is an in-browser web application that visualizes data received from [UV Tracks](http://envirover.com/docs/uvtracks.html) web service. The container also forwards requests with path started with /uvtracks to URL specified by UVTRACKS_PRIVATE_URL environment variable.
 
 ## Build
+
+```bash
 ng build --base-href /uvcockpit/
 docker build -t uvcockpit .
+```
 
 # Run
+
+```bash
 docker run -p 80:80 -d uvcockpit
+```
 
 ## Quick Start
 
