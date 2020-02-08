@@ -1,146 +1,40 @@
 export const trackPoint = {
-    fields: [{
-            name: 'sysid',
-            alias: 'sysid',
-            type: 'integer'
-        },
-        {
-            name: 'time',
-            alias: 'time',
-            type: 'long'
-        },
-        {
-            name: 'airspeed',
-            alias: 'airspeed',
-            type: 'integer'
-        },
-        {
-            name: 'airspeed_sp',
-            alias: 'airspeed_sp',
-            type: 'integer'
-        },
-        {
-            name: 'altitude_amsl',
-            alias: 'altitude_amsl',
-            type: 'integer'
-        },
-        {
-            name: 'altitude_sp',
-            alias: 'altitude_sp',
-            type: 'integer'
-        },
-        {
-            name: 'base_mode',
-            alias: 'base_mode',
-            type: 'integer'
-        },
-        {
-            name: 'battery_remaining',
-            alias: 'battery_remaining',
-            type: 'integer'
-        },
-        {
-            name: 'climb_rate',
-            alias: 'climb_rate',
-            type: 'integer'
-        },
-        {
-            name: 'custom_mode',
-            alias: 'custom_mode',
-            type: 'integer'
-        },
-        {
-            name: 'failsafe',
-            alias: 'failsafe',
-            type: 'integer'
-        },
-        {
-            name: 'gps_fix_type',
-            alias: 'gps_fix_type',
-            type: 'integer'
-        },
-        {
-            name: 'gps_nsat',
-            alias: 'gps_nsat',
-            type: 'integer'
-        },
-        {
-            name: 'groundspeed',
-            alias: 'groundspeed',
-            type: 'integer'
-        },
-        {
-            name: 'heading',
-            alias: 'heading',
-            type: 'double'
-        },
-        {
-            name: 'heading_sp',
-            alias: 'heading_sp',
-            type: 'integer'
-        },
-        {
-            name: 'landed_state',
-            alias: 'landed_state',
-            type: 'integer'
-        },
-        {
-            name: 'latitude',
-            alias: 'latitude',
-            type: 'double'
-        },
-        {
-            name: 'longitude',
-            alias: 'longitude',
-            type: 'double'
-        },
-        {
-            name: 'pitch',
-            alias: 'pitch',
-            type: 'double'
-        },
-        {
-            name: 'roll',
-            alias: 'roll',
-            type: 'double'
-        },
-        {
-            name: 'temperature',
-            alias: 'temperature',
-            type: 'integer'
-        },
-        {
-            name: 'temperature_air',
-            alias: 'temperature_air',
-            type: 'integer'
-        },
-        {
-            name: 'throttle',
-            alias: 'throttle',
-            type: 'integer'
-        },
-        {
-            name: 'wp_distance',
-            alias: 'wp_distance',
-            type: 'integer'
-        },
-        {
-            name: 'wp_num',
-            alias: 'wp_num',
-            type: 'integer'
-        },
-        {
-            name: 'tilt',
-            alias: 'tilt',
-            type: 'double'
-        }
-    ],
     // Set up popup template for the layer
     template: {
-        title: 'System {sysid} at {time}',
+        title: 'System {sysid} state',
+        expressionInfos: [
+            {
+                name: 'heading',
+                title: 'Heading (degrees)',
+                expression: '$feature.heading / 100'
+            },
+            {
+                name: 'heading_sp',
+                title: 'Heading setpoint (degrees)',
+                expression: '$feature.heading_sp / 100'
+            },
+            {
+                name: 'roll',
+                title: 'Roll (degrees)',
+                expression: '$feature.roll / 100'
+            },
+            {
+                name: 'pitch',
+                title: 'Pitch (degrees)',
+                expression: '$feature.pitch / 100'
+            }],
         content: [{
             type: 'fields',
-            fieldInfos: [{
+            fieldInfos: [
+                {
+                    fieldName: 'time',
+                    label: 'Time',
+                    format: {
+                        dateFormat: 'short-date-long-time-24'
+                    },
+                    visible: true
+                },
+                {
                     fieldName: 'airspeed',
                     label: 'Air speed (m/s)',
                     visible: true
@@ -156,23 +50,23 @@ export const trackPoint = {
                     visible: true
                 },
                 {
-                    fieldName: 'heading',
+                    fieldName: 'expression/heading',
                     label: 'Heading (decimal degrees)',
                     visible: true
                 },
                 {
-                    fieldName: 'heading_sp',
-                    label: 'Heading setpoint (decimal degrees)',
+                    fieldName: 'expression/heading_sp',
+                    label: 'Heading setpoint (degrees)',
                     visible: true
                 },
                 {
-                    fieldName: 'pitch',
-                    label: 'Pitch (decimal degrees)',
+                    fieldName: 'expression/pitch',
+                    label: 'Pitch (degrees)',
                     visible: true
                 },
                 {
-                    fieldName: 'roll',
-                    label: 'Roll (decimal degrees)',
+                    fieldName: 'expression/roll',
+                    label: 'Roll (degrees)',
                     visible: true
                 }, {
                     fieldName: 'altitude_amsl',
@@ -190,16 +84,6 @@ export const trackPoint = {
                     visible: true
                 },
                 {
-                    fieldName: 'latitude',
-                    label: 'Latitude (decimal degrees)',
-                    visible: true
-                },
-                {
-                    fieldName: 'longitude',
-                    label: 'Longitude (decimal degrees)',
-                    visible: true
-                },
-                {
                     fieldName: 'gps_fix_type',
                     label: 'GPS Fix type',
                     visible: true
@@ -211,7 +95,7 @@ export const trackPoint = {
                 },
                 {
                     fieldName: 'battery_remaining',
-                    label: 'Remaining battery (%)',
+                    label: 'Battery remaining (%)',
                     visible: true
                 },
                 {
@@ -280,7 +164,7 @@ export const trackPoint = {
         visualVariables: [{
             'type': 'rotation',
             'rotationType': 'arithmetic',
-            'valueExpression': '-$feature.heading',
+            'valueExpression': '-$feature.heading/100',
             'axis': 'heading'
         }]
     },
@@ -290,9 +174,12 @@ export const trackPoint = {
             type: 'point-3d', // autocasts as new PointSymbol3D()
             symbolLayers: [{
                 type: 'object', // autocasts as new ObjectSymbol3DLayer()
-                width: 3, // diameter of the object from east to west in meters
+                width: 1, // diameter of the object from east to west in meters
                 height: 4, // height of the object in meters
-                depth: 1, // diameter of the object from north to south in meters
+                depth: 3, // diameter of the object from north to south in meters
+                heading: 90,
+                pitch: 0,
+                roll: 90,
                 resource: {
                     primitive: 'cone'
                 },
@@ -303,51 +190,52 @@ export const trackPoint = {
         },
         visualVariables: [{
             'type': 'rotation',
-            'field': 'heading',
+            'rotationType': 'arithmetic',
+            'valueExpression': '-$feature.heading/100 - 90',
             'axis': 'heading'
         }, {
             'type': 'rotation',
-            'field': 'roll',
+            'rotationType': 'arithmetic',
+            'valueExpression': '-$feature.roll/100',
             'axis': 'roll'
-        } , {
+        }, {
             'type': 'rotation',
-            'field': 'tilt',
+            'rotationType': 'arithmetic',
+            'valueExpression': '-$feature.pitch/100',
             'axis': 'tilt'
         }]
     }
 };
 
 export const trackLine = {
-    fields: [{
-            name: 'sysid',
-            alias: 'sysid',
-            type: 'oid'
-        },
-        {
-            name: 'from_time',
-            alias: 'from_time',
-            type: 'long'
-        },
-        {
-            name: 'to_time',
-            alias: 'to_time',
-            type: 'long'
-        }
-    ],
     template: {
-        title: 'Track',
+        title: 'System {sysid} track',
         content: [{
             type: 'fields',
             fieldInfos: [{
-                    fieldName: 'from_time',
-                    label: 'from_time',
-                    visible: true
+                fieldName: 'from_time',
+                label: 'From Time',
+                format: {
+                    dateFormat: 'short-date-long-time-24'
                 },
-                {
-                    fieldName: 'to_time',
-                    label: 'to_time',
-                    visible: true
-                }
+                visible: true
+            },
+            {
+                fieldName: 'to_time',
+                label: 'To Time',
+                format: {
+                    dateFormat: 'short-date-long-time-24'
+                },
+                visible: true
+            },
+            {
+                fieldName: 'length',
+                label: 'Length (m)',
+                format: {
+                    places: 0
+                },
+                visible: true
+            }
             ]
         }]
     },
@@ -370,87 +258,66 @@ export const trackLine = {
 };
 
 export const missionPoint = {
-    fields: [{
-            name: 'seq',
-            alias: 'seq',
-            type: 'oid'
-        },
-        {
-            name: 'autoContinue',
-            alias: 'autoContinue',
-            type: 'integer'
-        },
-        {
-            name: 'command',
-            alias: 'command',
-            type: 'integer'
-        },
-        {
-            name: 'doJumpId',
-            alias: 'doJumpId',
-            type: 'integer'
-        },
-        {
-            name: 'frame',
-            alias: 'frame',
-            type: 'integer'
-        },
-        {
-            name: 'params',
-            alias: 'params',
-            type: 'string'
-        },
-        {
-            name: 'type',
-            alias: 'type',
-            type: 'string'
-        }
-    ],
     template: {
-        title: 'Mission item {seq}',
+        title: 'System {target_system} mission item {seq}',
         content: [{
             type: 'fields',
             fieldInfos: [{
-                    fieldName: 'seq',
-                    label: 'seq',
-                    visible: true
-                },
-                {
-                    fieldName: 'autoContinue',
-                    label: 'autoContinue',
-                    visible: true
-                },
-                {
-                    fieldName: 'command',
-                    label: 'command',
-                    visible: true
-                },
-                {
-                    fieldName: 'doJumpId',
-                    label: 'doJumpId',
-                    visible: true
-                },
-                {
-                    fieldName: 'frame',
-                    label: 'frame',
-                    visible: true
-                },
-                {
-                    fieldName: 'params',
-                    label: 'params',
-                    visible: true
-                },
-                {
-                    fieldName: 'type',
-                    label: 'type',
-                    visible: true
-                }
+                fieldName: 'seq',
+                label: 'Sequence',
+                visible: true
+            },
+            {
+                fieldName: 'autocontinue',
+                label: 'Autocontinue',
+                visible: true
+            },
+            {
+                fieldName: 'command',
+                label: 'Command',
+                visible: true
+            },
+            {
+                fieldName: 'current',
+                label: 'Current',
+                visible: true
+            },
+            {
+                fieldName: 'z',
+                label: 'Altitude (m)',
+                visible: true
+            },
+            {
+                fieldName: 'frame',
+                label: 'Frame',
+                visible: true
+            },
+            {
+                fieldName: 'param1',
+                label: 'Param 1',
+                visible: true
+            },
+            {
+                fieldName: 'param2',
+                label: 'Param 2',
+                visible: true
+            },
+            {
+                fieldName: 'param3',
+                label: 'Param 3',
+                visible: true
+            },
+            {
+                fieldName: 'param4',
+                label: 'Param 4',
+                visible: true
+            }
             ]
         }]
     },
     renderer2d: {
         type: 'unique-value',
-        field: 'type',
+        field: 'seq',
         defaultSymbol: {
             type: 'simple-marker',
             color: 'yellow',
@@ -461,7 +328,7 @@ export const missionPoint = {
         },
         uniqueValueInfos: [{
             // All features with value of 'PlannedHome' will be green
-            value: 'PlannedHome',
+            value: '1',
             symbol: {
                 type: 'simple-marker',
                 color: 'green',
@@ -474,7 +341,7 @@ export const missionPoint = {
     },
     renderer3d: {
         type: 'unique-value',
-        field: 'type',
+        field: 'seq',
         defaultSymbol: {
             type: 'point-3d',
             symbolLayers: [{
@@ -492,7 +359,7 @@ export const missionPoint = {
         },
         uniqueValueInfos: [{
             // All features with value of 'PlannedHome' will be green
-            value: 'PlannedHome',
+            value: '0',
             symbol: {
                 type: 'point-3d',
                 symbolLayers: [{
@@ -530,44 +397,17 @@ export const missionPoint = {
 
 // Set up popup template for the mission lines layer
 export const missionLine = {
-    fields: [{
-            name: 'sysid',
-            alias: 'sysid',
-            type: 'oid'
-        },
-        {
-            name: 'cruiseSpeed',
-            alias: 'cruiseSpeed',
-            type: 'integer'
-        },
-        {
-            name: 'hoverSpeed',
-            alias: 'hoverSpeed',
-            type: 'integer'
-        },
-        {
-            name: 'length',
-            alias: 'length',
-            type: 'double'
-        }
-    ],
     template: {
-        title: 'Mission',
+        title: 'System {target_system} mission',
         content: [{
             type: 'fields',
-            fieldInfos: [{
-                    fieldName: 'cruiseSpeed',
-                    label: 'Cruise speed (m/s)',
-                    visible: true
-                },
-                {
-                    fieldName: 'hoverSpeed',
-                    label: 'Hover speed (m/s)',
-                    visible: true
-                },
+            fieldInfos: [
                 {
                     fieldName: 'length',
                     label: 'Length (m)',
+                    format: {
+                        places: 0
+                    },
                     visible: true
                 }
             ]

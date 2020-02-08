@@ -2,7 +2,6 @@ import { Component, OnInit, ViewChild, ElementRef, Input, Output, EventEmitter }
 import { loadModules } from 'esri-loader';
 import { trackPoint, trackLine, missionPoint, missionLine } from '../uvlayers';
 import { UVTracksClient } from '../uvtracks';
-import { GeoAdapter } from '../geo-adapter';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -18,7 +17,6 @@ export class EsriMapComponent implements OnInit {
   @ViewChild('mapViewNode', { static: true }) private mapViewEl: ElementRef = new ElementRef(null);
 
   private _zoom = 15;
-  private _center: Array<number> = [];
   private _basemap = 'satellite';
   private _loaded = false;
   private sysid?: number;
@@ -40,15 +38,6 @@ export class EsriMapComponent implements OnInit {
   }
 
   @Input()
-  set center(center: Array<number>) {
-    this._center = center;
-  }
-
-  get center(): Array<number> {
-    return this._center;
-  }
-
-  @Input()
   set basemap(basemap: string) {
     this._basemap = basemap;
   }
@@ -64,26 +53,68 @@ export class EsriMapComponent implements OnInit {
       this.startTime = params['startTime'] ? Number(params['startTime']) : undefined;
       this.endTime = params['endTime'] ? Number(params['endTime']) : undefined;
       this.top = params['top'] ? Number(params['top']) : undefined;
+      this.zoom = params['zoom'] ? Number(params['zoom']) : 15;
     });
   }
 
   async initializeMap() {
     try {
-
       // Load the modules for the ArcGIS API for JavaScript
-      const [Map, MapView, Point, Polyline, Collection, Graphic, geometryEngine, FeatureLayer] = await loadModules([
+      const [Map, MapView, GeoJSONLayer] = await loadModules([
         'esri/Map',
         'esri/views/MapView',
-        'esri/geometry/Point',
-        'esri/geometry/Polyline',
-        'esri/core/Collection',
-        'esri/Graphic',
-        'esri/geometry/geometryEngine',
-        'esri/layers/FeatureLayer'
+        'esri/layers/GeoJSONLayer'
       ]);
+
+      const uvtracks = this.uvtracks;
+
+      const stateLayer = new GeoJSONLayer({
+        // url: uvtracks.getStateURL(this.sysid),
+        url: uvtracks.getTracksURL(this.sysid, this.startTime, this.endTime, 1, 'point'),
+        renderer: trackPoint.renderer2d,
+        spatialReference: {
+          wkid: 4326
+        },
+        geometryType: 'point',
+        refreshInterval: 0.1,
+        popupTemplate: trackPoint.template
+      });
+
+      const tracksLayer = new GeoJSONLayer({
+        url: uvtracks.getTracksURL(this.sysid, this.startTime, this.endTime, this.top, 'line'),
+        renderer: trackLine.renderer2d,
+        spatialReference: {
+          wkid: 4326
+        },
+        geometryType: 'polyline',
+        refreshInterval: 0.1,
+        popupTemplate: trackLine.template
+      });
+
+      const missionsPointLayer = new GeoJSONLayer({
+        url: uvtracks.getMissionsURL(this.sysid, 'point'),
+        renderer: missionPoint.renderer2d,
+        spatialReference: {
+          wkid: 4326
+        },
+        geometryType: 'point',
+        popupTemplate: missionPoint.template,
+        labelingInfo: [missionPoint.labelClass]
+      });
+
+      const missionsLineLayer = new GeoJSONLayer({
+        url: uvtracks.getMissionsURL(this.sysid, 'line'),
+        renderer: missionLine.renderer2d,
+        spatialReference: {
+          wkid: 4326
+        },
+        geometryType: 'polyline',
+        popupTemplate: missionLine.template
+      });
 
       const map = new Map({
         basemap: this._basemap,
+        layers: [stateLayer, tracksLayer, missionsPointLayer, missionsLineLayer],
         spatialReference: {
           wkid: 3857
         }
@@ -94,137 +125,24 @@ export class EsriMapComponent implements OnInit {
         map: map
       });
 
-      const uvtracks = this.uvtracks;
-
-      const adapter = new GeoAdapter(Point, Polyline, Collection, Graphic, geometryEngine);
-
-      const zoomToLayer = function (layer: __esri.FeatureLayer) {
-        view.whenLayerView(layer).then(function (layerView: any) {
-          layerView.queryExtent().then(function (response: any) {
-            // go to the extent of all the graphics in the layer view
-            if (response.extent != null) {
-              view.scale = 10000;
-              view.goTo(response.extent);
-            }
+      const zoomToLayer = function (layer: any, zoom: number) {
+        return layer.queryExtent().then(function (response: any) {
+          console.log('Zoom to: ', response.extent);
+          view.goTo({
+            center: response.extent.center,
+            zoom: zoom
           });
         });
       };
 
-      const createTrackPointsLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
-        const pointsLayer = new FeatureLayer({
-          source: graphics, // autocast as an array of esri/Graphic
-          fields: trackPoint.fields,
-          objectIdField: 'sysid',
-          renderer: trackPoint.renderer2d,
-          spatialReference: {
-            wkid: 4326
-          },
-          geometryType: 'point',
-          popupTemplate: trackPoint.template
-        });
+      stateLayer.when(() => zoomToLayer(stateLayer, this.zoom));
 
-        map.add(pointsLayer);
-
-        return pointsLayer;
-      };
-
-      const createTrackLinesLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
-        const linesLayer = new FeatureLayer({
-          source: graphics, // autocast as an array of esri/Graphic
-          fields: trackLine.fields,
-          objectIdField: 'sysid',
-          renderer: trackLine.renderer2d,
-          spatialReference: {
-            wkid: 4326
-          },
-          geometryType: 'polyline',
-          popupTemplate: trackLine.template
-        });
-
-        map.add(linesLayer);
-        return linesLayer;
-      };
-
-      const createMissionPointsLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
-        const pointsLayer = new FeatureLayer({
-          source: graphics,
-          fields: missionPoint.fields,
-          objectIdField: 'seq',
-          renderer: missionPoint.renderer2d,
-          spatialReference: {
-            wkid: 4326
-          },
-          geometryType: 'point',
-          popupTemplate: missionPoint.template,
-          labelingInfo: [missionPoint.labelClass]
-        });
-
-        map.add(pointsLayer);
-        return pointsLayer;
-      };
-
-      const createMissionLinesLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
-        const linesLayer = new FeatureLayer({
-          source: graphics,
-          fields: missionLine.fields,
-          objectIdField: 'sysid',
-          renderer: missionLine.renderer2d,
-          spatialReference: {
-            wkid: 4326
-          },
-          geometryType: 'polyline',
-          popupTemplate: missionLine.template
-        });
-
-        map.add(linesLayer);
-        return linesLayer;
-      };
-
-      // Executes if data retrieval was unsuccessful.
-      const errback = function (error: any) {
-        console.error('Error. ', error);
-      };
-
-       view.when(() => {
-        const missions = uvtracks.getMissions();
-
-        missions
-          .then(m => {
-            return adapter.convertMissionLinesGraphics(m);
-          })
-          .then(createMissionLinesLayer)
-          .catch(errback);
-
-        missions
-          .then(m => {
-            return adapter.convertMissionPointsGraphics(m);
-          })
-          .then(createMissionPointsLayer)
-          .catch(errback);
-
-        const tracks = uvtracks.getTracks(this.sysid, this.startTime, this.endTime, this.top);
-
-        tracks
-          .then(m => {
-            return adapter.convertTrackLinesGraphics(m);
-          })
-          .then(createTrackLinesLayer)
-          .catch(errback);
-
-        tracks
-          .then(m => {
-            return adapter.convertTrackPointsGraphics(m);
-          })
-          .then(createTrackPointsLayer)
-          .then(zoomToLayer)
-          .catch(errback);
-      });
+      setInterval(function () { stateLayer.refresh(); }, 5000);
 
       return view;
     } catch (error) {
       console.log('EsriLoader: ', error);
     }
-
   }
 
   // Finalize a few things once the MapView has been loaded
