@@ -50,6 +50,11 @@ export const trackPoint = {
                     visible: true
                 },
                 {
+                    fieldName: 'climb_rate',
+                    label: 'Climb rate (m/s)',
+                    visible: true
+                },
+                {
                     fieldName: 'expression/heading',
                     label: 'Heading (decimal degrees)',
                     visible: true
@@ -76,11 +81,6 @@ export const trackPoint = {
                 {
                     fieldName: 'altitude_sp',
                     label: 'Altitude setpoint relative home (m)',
-                    visible: true
-                },
-                {
-                    fieldName: 'climb_rate',
-                    label: 'Climb rate (m/s)',
                     visible: true
                 },
                 {
