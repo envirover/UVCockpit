@@ -3,7 +3,6 @@ import { loadModules } from 'esri-loader';
 
 import { trackPoint, trackLine, missionPoint, missionLine } from '../uvlayers';
 import { UVTracksClient } from '../uvtracks';
-import { GeoAdapter } from '../geo-adapter';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -16,7 +15,7 @@ export class EsriSceneComponent implements OnInit {
   @Output() mapLoadedEvent = new EventEmitter<boolean>();
 
   // The <div> where we will place the map
-  @ViewChild('sceneViewNode') private mapViewEl: ElementRef = new ElementRef(null);
+  @ViewChild('sceneViewNode', { static: true }) private mapViewEl: ElementRef = new ElementRef(null);
 
   private _zoom = 15;
   private _center: Array<number> = [];
@@ -65,21 +64,17 @@ export class EsriSceneComponent implements OnInit {
       this.startTime = params['startTime'] ? Number(params['startTime']) : undefined;
       this.endTime = params['endTime'] ? Number(params['endTime']) : undefined;
       this.top = params['top'] ? Number(params['top']) : undefined;
+      this.zoom = params['zoom'] ? Number(params['zoom']) : 15;
     });
   }
 
   async initializeMap() {
     try {
       // Load the modules for the ArcGIS API for JavaScript
-      const [Map, SceneView, Point, Polyline, Collection, Graphic, geometryEngine, FeatureLayer] = await loadModules([
+      const [Map, SceneView, GeoJSONLayer] = await loadModules([
         'esri/Map',
         'esri/views/SceneView',
-        'esri/geometry/Point',
-        'esri/geometry/Polyline',
-        'esri/core/Collection',
-        'esri/Graphic',
-        'esri/geometry/geometryEngine',
-        'esri/layers/FeatureLayer'
+        'esri/layers/GeoJSONLayer'
       ]);
 
       // let elevationDelta = 0.0;
@@ -88,8 +83,53 @@ export class EsriSceneComponent implements OnInit {
        * Create the map and view
        **************************************************/
 
+      const uvtracks = this.uvtracks;
+
+      const stateLayer = new GeoJSONLayer({
+        // url: uvtracks.getStateURL(this.sysid),
+        url: uvtracks.getTracksURL(this.sysid, this.startTime, this.endTime, 1, 'point'),
+        renderer: trackPoint.renderer3d,
+        spatialReference: {
+          wkid: 4326
+        },
+        geometryType: 'point',
+        popupTemplate: trackPoint.template
+      });
+
+      const tracksLayer = new GeoJSONLayer({
+        url: uvtracks.getTracksURL(this.sysid, this.startTime, this.endTime, this.top, 'line'),
+        renderer: trackLine.renderer3d,
+        spatialReference: {
+          wkid: 4326
+        },
+        geometryType: 'polyline',
+        popupTemplate: trackLine.template
+      });
+
+      const missionsPointLayer = new GeoJSONLayer({
+        url: uvtracks.getMissionsURL(this.sysid, 'point'),
+        renderer: missionPoint.renderer3d,
+        spatialReference: {
+          wkid: 4326
+        },
+        geometryType: 'point',
+        popupTemplate: missionPoint.template,
+        labelingInfo: [missionPoint.labelClass]
+      });
+
+      const missionsLineLayer = new GeoJSONLayer({
+        url: uvtracks.getMissionsURL(this.sysid, 'line'),
+        renderer: missionLine.renderer3d,
+        spatialReference: {
+          wkid: 4326
+        },
+        geometryType: 'polyline',
+        popupTemplate: missionLine.template
+      });
+
       const map = new Map({
         basemap: this.basemap,
+        layers: [stateLayer, tracksLayer, missionsPointLayer, missionsLineLayer],
         ground: 'world-elevation'
       });
 
@@ -98,168 +138,24 @@ export class EsriSceneComponent implements OnInit {
       };
 
       map.ground.opacity = 0.8;
-      const zoom = this.zoom;
+      // const zoom = this.zoom;
 
       const view = new SceneView({
         container: this.mapViewEl.nativeElement,
         map: map
       });
 
-      const uvtracks = this.uvtracks;
-
-      const adapter = new GeoAdapter(Point, Polyline, Collection, Graphic, geometryEngine);
-
-      // const fixHomeAltitude = async function (plan: UVMissionPlan) {
-      //   if (plan.mission && plan.mission.plannedHomePosition.length > 2) {
-      //     const home = new Point({
-      //       x: plan.mission.plannedHomePosition[1],
-      //       y: plan.mission.plannedHomePosition[0],
-      //       z: plan.mission.plannedHomePosition[2],
-      //     });
-
-      //     const elevation = await map.ground.layers.items[0].queryElevation(home);
-
-      //     elevationDelta = elevation.geometry.z - plan.mission.plannedHomePosition[2];
-
-      //     plan.mission.plannedHomePosition[2] = elevation.geometry.z;
-      //   }
-
-      //   return plan;
-      // };
-
-      // const fixTracksAltitude = function (geoJson: GeoJSON.FeatureCollection) {
-      //   if (geoJson.features) {
-      //     for (let i = 0; i < geoJson.features.length; i++) {
-      //       const feature = geoJson.features[i];
-      //       (feature.geometry as GeoJSON.Point).coordinates[2] += elevationDelta;
-      //     }
-      //   }
-
-      //   return geoJson;
-      // };
-
-      const zoomToLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.Collection<__esri.Graphic> {
-        const pt = graphics.getItemAt(0).geometry;
-
-        view.goTo({
-          target: pt,
-          zoom: zoom
+      const zoomToLayer = function (layer: any, zoom: number) {
+        return layer.queryExtent().then(function (response: any) {
+          console.log('Zoom to: ', response.extent);
+          view.goTo({
+            center: response.extent.center,
+            zoom: zoom
+          });
         });
-
-        return graphics;
       };
 
-      const createTrackPointsLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
-        const pointsLayer = new FeatureLayer({
-          source: graphics,
-          fields: trackPoint.fields,
-          objectIdField: 'sysid',
-          renderer: trackPoint.renderer3d,
-          spatialReference: {
-            wkid: 4326
-          },
-          geometryType: 'point',
-          popupTemplate: trackPoint.template
-        });
-
-        map.add(pointsLayer);
-
-        return pointsLayer;
-      };
-
-      const createTrackLinesLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
-        const linesLayer = new FeatureLayer({
-          source: graphics,
-          fields: trackLine.fields,
-          objectIdField: 'sysid',
-          renderer: trackLine.renderer3d,
-          spatialReference: {
-            wkid: 4326
-          },
-          geometryType: 'polyline',
-          popupTemplate: trackLine.template
-        });
-
-        map.add(linesLayer);
-        return linesLayer;
-      };
-
-      const createMissionPointsLayer = function (graphics: __esri.Collection<__esri.Graphic>): __esri.FeatureLayer {
-        const pointsLayer = new FeatureLayer({
-          source: graphics,
-          fields: missionPoint.fields,
-          objectIdField: 'seq',
-          renderer: missionPoint.renderer3d,
-          spatialReference: {
-            wkid: 4326
-          },
-          geometryType: 'point',
-          popupTemplate: missionPoint.template,
-          labelingInfo: [missionPoint.labelClass]
-        });
-
-        map.add(pointsLayer);
-        return pointsLayer;
-      };
-
-      const createMissionLinesLayer = function (graphics: any): __esri.FeatureLayer {
-        const linesLayer = new FeatureLayer({
-          source: graphics,
-          fields: missionLine.fields,
-          objectIdField: 'sysid',
-          renderer: missionLine.renderer3d,
-          spatialReference: {
-            wkid: 4326
-          },
-          geometryType: 'polyline',
-          popupTemplate: missionLine.template
-        });
-
-        map.add(linesLayer);
-        return linesLayer;
-      };
-
-      // Executes if data retrieval was unsuccessful.
-      const errback = function (error: any) {
-        console.error('Error. ', error);
-      };
-
-      view.when(() => {
-        const missions = uvtracks.getMissions();
-         // .then(fixHomeAltitude);
-
-        missions
-          .then(m => {
-            return adapter.convertMissionLinesGraphics(m);
-          })
-          .then(createMissionLinesLayer)
-          .catch(errback);
-
-        missions
-          .then(m => {
-            return adapter.convertMissionPointsGraphics(m);
-          })
-          .then(createMissionPointsLayer)
-          .catch(errback);
-
-        const tracks = uvtracks.getTracks(this.sysid, this.startTime, this.endTime, this.top);
-         // .then(fixTracksAltitude);
-
-        tracks
-          .then(m => {
-            return adapter.convertTrackLinesGraphics(m);
-          })
-          .then(createTrackLinesLayer)
-          .catch(errback);
-
-        tracks
-          .then(m => {
-            return adapter.convertTrackPointsGraphics(m);
-          })
-          .then(zoomToLayer)
-          .then(createTrackPointsLayer)
-          .catch(errback);
-      });
+      stateLayer.when(() => zoomToLayer(stateLayer, this.zoom));
 
       return view;
     } catch (error) {
