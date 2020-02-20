@@ -1,4 +1,4 @@
-FROM nginx:1.16.0
+FROM nginx:1.17.8
 
 COPY ./dist /usr/share/nginx/html/
 COPY ./config.sh /usr/share/
