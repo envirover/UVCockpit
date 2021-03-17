@@ -39,7 +39,7 @@ export class UVTracksClient {
     constructor(private http: HttpClient) { }
 
     getStateURL(sysId?: number): string {
-        let stateUrl = AppConfig.uvTracksBaseURL + '/uvtracks/api/v2/state';
+        let stateUrl = AppConfig.uvTracksBaseURL + '/uvtracks/api/v3/state';
 
         const parameters = {
             'sysid': sysId
@@ -55,7 +55,7 @@ export class UVTracksClient {
     }
 
     getTracksURL(sysId?: number, startTime?: number, endTime?: number, top?: number, geometryType?: string): string {
-        let tracksUrl = AppConfig.uvTracksBaseURL + '/uvtracks/api/v2/tracks';
+        let tracksUrl = AppConfig.uvTracksBaseURL + '/uvtracks/api/v3/tracks';
 
         console.log('getTracks: ' + tracksUrl);
 
@@ -92,7 +92,7 @@ export class UVTracksClient {
     }
 
     getMissionsURL(sysId?: number, geometryType?: string): string {
-        let missionsUrl = AppConfig.uvTracksBaseURL + '/uvtracks/api/v2/missions';
+        let missionsUrl = AppConfig.uvTracksBaseURL + '/uvtracks/api/v3/missions';
 
         console.log('getMissions: ' + missionsUrl);
 

@@ -8,7 +8,7 @@ UV Cockpit is an in-browser web application that visualizes data received from [
 
 ```bash
 ng build --base-href /uvcockpit/
-docker build -t uvcockpit .
+docker build -t uvcockpit build
 ```
 
 # Run

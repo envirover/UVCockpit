@@ -2,36 +2,30 @@ export const trackPoint = {
     // Set up popup template for the layer
     template: {
         title: 'System {sysid} state',
-        expressionInfos: [
-            {
-                name: 'heading',
-                title: 'Heading (degrees)',
-                expression: '$feature.heading / 100'
-            },
-            {
-                name: 'heading_sp',
-                title: 'Heading setpoint (degrees)',
-                expression: '$feature.heading_sp / 100'
-            },
-            {
-                name: 'roll',
-                title: 'Roll (degrees)',
-                expression: '$feature.roll / 100'
-            },
-            {
-                name: 'pitch',
-                title: 'Pitch (degrees)',
-                expression: '$feature.pitch / 100'
-            }],
         content: [{
             type: 'fields',
             fieldInfos: [
                 {
+                    fieldName: 'mav_type',
+                    label: 'UV type (MAV_TYPE)',
+                    visible: true
+                },
+                {
+                    fieldName: 'autopilot',
+                    label: 'Autopilot type (MAV_AUTOPILOT)',
+                    visible: true
+                },
+                {
                     fieldName: 'time',
-                    label: 'Time',
+                    label: 'Time received (Unix epoch)',
                     format: {
                         dateFormat: 'short-date-long-time-24'
                     },
+                    visible: true
+                },
+                {
+                    fieldName: 'timestamp',
+                    label: 'Time simce boot (ms)',
                     visible: true
                 },
                 {
@@ -55,56 +49,46 @@ export const trackPoint = {
                     visible: true
                 },
                 {
-                    fieldName: 'expression/heading',
-                    label: 'Heading (decimal degrees)',
+                    fieldName: 'heading',
+                    label: 'Heading (degrees)',
                     visible: true
                 },
                 {
-                    fieldName: 'expression/heading_sp',
-                    label: 'Heading setpoint (degrees)',
-                    visible: true
-                },
-                {
-                    fieldName: 'expression/pitch',
-                    label: 'Pitch (degrees)',
-                    visible: true
-                },
-                {
-                    fieldName: 'expression/roll',
-                    label: 'Roll (degrees)',
+                    fieldName: 'target_heading',
+                    label: 'Target heading (degrees)',
                     visible: true
                 }, {
-                    fieldName: 'altitude_amsl',
+                    fieldName: 'altitude',
                     label: 'Altitude above mean sea level (m)',
                     visible: true
                 },
                 {
-                    fieldName: 'altitude_sp',
-                    label: 'Altitude setpoint relative home (m)',
+                    fieldName: 'target_altitude',
+                    label: 'Altitude relative to home (m)',
                     visible: true
                 },
                 {
-                    fieldName: 'gps_fix_type',
-                    label: 'GPS Fix type',
+                    fieldName: 'eph',
+                    label: 'Maximum error horizontal position (m)',
                     visible: true
                 },
                 {
-                    fieldName: 'gps_nsat',
-                    label: 'Number of GPS satellites visible',
+                    fieldName: 'epv',
+                    label: 'Maximum error vertical position (m)',
                     visible: true
                 },
                 {
-                    fieldName: 'battery_remaining',
+                    fieldName: 'battery',
                     label: 'Battery remaining (%)',
                     visible: true
                 },
                 {
-                    fieldName: 'temperature',
+                    fieldName: 'battery_voltage',
                     label: 'Battery voltage (volts)',
                     visible: true
                 },
                 {
-                    fieldName: 'temperature_air',
+                    fieldName: 'battery2_voltage',
                     label: 'Battery 2 voltage (volts)',
                     visible: true
                 },
@@ -114,7 +98,7 @@ export const trackPoint = {
                     visible: true
                 },
                 {
-                    fieldName: 'wp_distance',
+                    fieldName: 'target_distance',
                     label: 'Distance to target (m)',
                     visible: true
                 },
@@ -124,23 +108,28 @@ export const trackPoint = {
                     visible: true
                 },
                 {
-                    fieldName: 'base_mode',
-                    label: 'Bitmap of enabled system modes',
-                    visible: true
-                },
-                {
                     fieldName: 'custom_mode',
-                    label: 'Bitfield of autopilot-specific flags',
+                    label: 'autopilot-specific mode flags',
                     visible: true
                 },
                 {
-                    fieldName: 'failsafe',
-                    label: 'Failsafe flags',
+                    fieldName: 'failure_flags',
+                    label: 'Bitmap of failure flags',
                     visible: true
                 },
                 {
-                    fieldName: 'landed_state',
-                    label: 'Landed state',
+                    fieldName: 'temperature_air',
+                    label: 'Air temperature (deg C)',
+                    visible: true
+                },
+                {
+                    fieldName: 'windspeed',
+                    label: 'Wind speed (m/s)',
+                    visible: true
+                },
+                {
+                    fieldName: 'wind_heading',
+                    label: 'Wind heading (degrees)',
                     visible: true
                 }
             ]
@@ -164,7 +153,7 @@ export const trackPoint = {
         visualVariables: [{
             'type': 'rotation',
             'rotationType': 'arithmetic',
-            'valueExpression': '-$feature.heading/100',
+            'valueExpression': '-$feature.heading',
             'axis': 'heading'
         }]
     },
@@ -191,18 +180,8 @@ export const trackPoint = {
         visualVariables: [{
             'type': 'rotation',
             'rotationType': 'arithmetic',
-            'valueExpression': '-$feature.heading/100 - 90',
+            'valueExpression': '-$feature.heading - 90',
             'axis': 'heading'
-        }, {
-            'type': 'rotation',
-            'rotationType': 'arithmetic',
-            'valueExpression': '-$feature.roll/100',
-            'axis': 'roll'
-        }, {
-            'type': 'rotation',
-            'rotationType': 'arithmetic',
-            'valueExpression': '-$feature.pitch/100',
-            'axis': 'tilt'
         }]
     }
 };
