@@ -12,11 +12,11 @@ export class HomePageComponent implements OnInit {
   }
 
   get tracksUrl() {
-    return AppConfig.uvTracksBaseURL + '/uvtracks/api/v2/tracks';
+    return AppConfig.uvTracksBaseURL + '/uvtracks/api/v3/tracks';
   }
 
   get missionsUrl() {
-    return AppConfig.uvTracksBaseURL + '/uvtracks/api/v2/missions';
+    return AppConfig.uvTracksBaseURL + '/uvtracks/api/v3/missions';
   }
 
   ngOnInit() {

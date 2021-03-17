@@ -47,16 +47,6 @@ export class GeoAdapter {
             attributes: feature.properties
         });
 
-        if (graphic.attributes) {
-            graphic.attributes.latitude /= 10000000.0;
-            graphic.attributes.longitude /= 10000000.0;
-            graphic.attributes.heading /= 100.0;
-            graphic.attributes.pitch /= 100.0;
-            graphic.attributes.roll /= 100.0;
-            graphic.attributes.tilt = graphic.attributes.roll - 90;
-        }
-
-
         points.push(graphic);
 
         return points;
