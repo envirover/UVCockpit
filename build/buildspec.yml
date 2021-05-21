@@ -4,16 +4,16 @@ phases:
   install:
     runtime-versions:
       nodejs: 14
-    commands:
+    #commands:
       #- curl -sL https://deb.nodesource.com/setup_14.x | bash -
       #- apt-get install -y nodejs
+  pre_build:
+    commands:
       - nodejs --version
       - npm config set strict-ssl false
       - echo Installing TypeScript...
       - npm install -g typescript
       - npm install -g @angular/cli
-  pre_build:
-    commands:
       - echo Logging in to Amazon ECR...
       - $(aws ecr get-login --no-include-email --region us-west-2)      
   build:
