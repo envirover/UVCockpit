@@ -9,7 +9,7 @@ phases:
       #- apt-get install -y nodejs
   pre_build:
     commands:
-      - nodejs --version
+      #- nodejs --version
       - npm config set strict-ssl false
       - echo Installing TypeScript...
       - npm install -g typescript
