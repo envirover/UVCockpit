@@ -15,7 +15,8 @@ phases:
       - npm install -g typescript
       - npm install -g @angular/cli
       - echo Logging in to Amazon ECR...
-      - $(aws ecr get-login --no-include-email --region us-west-2)      
+      #- $(aws ecr get-login --no-include-email --region us-west-2)   
+      - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 306327466070.dkr.ecr.us-west-2.amazonaws.com   
   build:
     commands:
       - echo Build started on `date`
