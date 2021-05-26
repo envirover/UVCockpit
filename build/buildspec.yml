@@ -2,18 +2,18 @@ version: 0.2
 
 phases:
   install:
+    runtime-versions:
+      nodejs: 14
+  pre_build:
     commands:
-      - curl -sL https://deb.nodesource.com/setup_10.x | bash -
-      - apt-get install -y nodejs
-      - nodejs --version
       - npm config set strict-ssl false
       - echo Installing TypeScript...
       - npm install -g typescript
       - npm install -g @angular/cli
-  pre_build:
-    commands:
       - echo Logging in to Amazon ECR...
-      - $(aws ecr get-login --no-include-email --region us-west-2)      
+      - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 306327466070.dkr.ecr.us-west-2.amazonaws.com   
+      - echo Logging in Docker Hub...
+      - docker login --username=${DOCKER_HUB_USERNAME} --password=${DOCKER_HUB_PASSWORD}   
   build:
     commands:
       - echo Build started on `date`

@@ -57,7 +57,18 @@ export const trackPoint = {
                     fieldName: 'target_heading',
                     label: 'Target heading (degrees)',
                     visible: true
-                }, {
+                },
+                {
+                    fieldName: 'pitch',
+                    label: 'Pitch (degrees)',
+                    visible: true
+                },
+                {
+                    fieldName: 'roll',
+                    label: 'Roll (degrees)',
+                    visible: true
+                },
+                {
                     fieldName: 'altitude',
                     label: 'Altitude above mean sea level (m)',
                     visible: true
@@ -65,16 +76,6 @@ export const trackPoint = {
                 {
                     fieldName: 'target_altitude',
                     label: 'Altitude relative to home (m)',
-                    visible: true
-                },
-                {
-                    fieldName: 'eph',
-                    label: 'Maximum error horizontal position (m)',
-                    visible: true
-                },
-                {
-                    fieldName: 'epv',
-                    label: 'Maximum error vertical position (m)',
                     visible: true
                 },
                 {
@@ -131,6 +132,11 @@ export const trackPoint = {
                     fieldName: 'wind_heading',
                     label: 'Wind heading (degrees)',
                     visible: true
+                },
+                {
+                    fieldName: 'channel',
+                    label: 'Channel number',
+                    visible: true
                 }
             ]
         }]
@@ -182,6 +188,16 @@ export const trackPoint = {
             'rotationType': 'arithmetic',
             'valueExpression': '-$feature.heading - 90',
             'axis': 'heading'
+        }, {
+            'type': 'rotation',
+            'rotationType': 'arithmetic',
+            'valueExpression': '-$feature.roll',
+            'axis': 'roll'
+        }, {
+            'type': 'rotation',
+            'rotationType': 'arithmetic',
+            'valueExpression': '-$feature.pitch',
+            'axis': 'tilt'
         }]
     }
 };
